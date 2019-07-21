@@ -1,7 +1,7 @@
 #include "hash_pointer.h"
 #include <stdio.h>
 
-int calc_sha256(unsigned char hash[SHA256_DIGEST_LENGTH], void *base, size_t len) {
+int hash_pointer_calc_sha256(unsigned char hash[SHA256_DIGEST_LENGTH], const void *base, const size_t len) {
     int ret;
     SHA256_CTX ctx;
     if (base == NULL || len == 0) {

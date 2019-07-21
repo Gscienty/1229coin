@@ -9,6 +9,6 @@ struct hash_pointer_s {
     unsigned char hash[64];
 };
 
-int calc_sha256(unsigned char hash[64], void *base, size_t len);
+int hash_pointer_calc_sha256(unsigned char hash[64], const void *base, const size_t len);
 
 #endif
