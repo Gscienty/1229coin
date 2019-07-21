@@ -14,4 +14,7 @@ int merkle_tree_node_parent_calc_sha256(merkle_tree_node_t *parent,
                                         const hash_pointer_t *left_hptr,
                                         const hash_pointer_t *right_hptr);
 
+int merkle_tree_proof_of_inclusion(const void *msg, const size_t msg_len,
+                                   const hash_pointer_t path[], const size_t path_len);
+
 #endif

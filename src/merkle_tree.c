@@ -18,3 +18,10 @@ int merkle_tree_node_parent_calc_sha256(merkle_tree_node_t *parent,
 
     return hash_pointer_calc_sha256(parent->node.hash, msg, 2 * SHA256_DIGEST_LENGTH);
 }
+
+int merkle_tree_proof_of_inclusion(const void *msg, const size_t msg_len,
+                                   const hash_pointer_t path[], const size_t path_len)
+{
+    // TODO
+    return 0;
+}
