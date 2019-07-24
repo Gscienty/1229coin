@@ -14,10 +14,21 @@ struct link_s {
 #define lnk_prev(p) ((p)->prev)
 #define cast_lnk_next(p, s, m) (cast(lnk_next((p)), s, m))
 #define cast_lnk_prev(p, s, m) (cast(lnk_prev((p)), s, m))
-#define lnk_header_init(p) \
+#define lnk_hdr_init(p) \
     ({  \
         (p)->next = (p); \
         (p)->prev = (p); \
      })
+
+#define lnk_insert_common(p, n, ins, ref_ins) \
+    ({ \
+        (n)->ins = (p)->ins; \
+        (n)->ins_ref = (p); \
+        (p)->ins->ins_ref = (n); \
+        (p)->ins = (n); \
+     })
+
+#define lnk_insert_after(p, n) lnk_insert_common(p, n, next, prev)
+#define lnk_insert_before(p, n) lnk_insert_common(p, n, prev, next)
 
 #endif
