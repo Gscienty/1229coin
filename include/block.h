@@ -25,6 +25,12 @@ struct block_s {
     load_node_fptr load_func;
 };
 
+#define blk_hptr(p) (&((p)->hptr))
+#define blk_hdr(p) (&((p)->hdr))
+#define blk_tx(p) (&((p)->tx_lnkhptr))
+#define blk_save(p, b) (((p)->save_func) ((void *) (p), (const char *) (b)))
+#define blk_load(p, b, h) (((p)->load_func) ((void *) (p), (const char *) (b), (const unsigned char *) (h)))
+
 int blk_init(block_t *bptr);
 
 #endif

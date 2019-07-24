@@ -10,13 +10,13 @@ int merkle_tree_node_parent_calc_sha256(merkle_tree_node_t *parent,
         return -1;
     }
 
-    memcpy(parent->left.hash, left_hptr->hash, SHA256_DIGEST_LENGTH);
-    memcpy(parent->right.hash, right_hptr->hash, SHA256_DIGEST_LENGTH);
+    memcpy(hptr_hash(mtn_lft(parent)), hptr_hash(left_hptr), SHA256_DIGEST_LENGTH);
+    memcpy(hptr_hash(mtn_rgt(parent)), hptr_hash(right_hptr), SHA256_DIGEST_LENGTH);
 
-    memcpy(msg, parent->left.hash, SHA256_DIGEST_LENGTH);
-    memcpy(msg + SHA256_DIGEST_LENGTH, parent->right.hash, SHA256_DIGEST_LENGTH);
+    memcpy(msg, hptr_hash(mtn_lft(parent)), SHA256_DIGEST_LENGTH);
+    memcpy(msg + SHA256_DIGEST_LENGTH, hptr_hash(mtn_rgt(parent)), SHA256_DIGEST_LENGTH);
 
-    return hash_pointer_calc_sha256(parent->hptr.hash, msg, 2 * SHA256_DIGEST_LENGTH);
+    return hash_pointer_calc_sha256(hptr_hash(mtn_hptr(parent)), msg, 2 * SHA256_DIGEST_LENGTH);
 }
 
 int merkle_tree_proof_of_inclusion(const void *msg, const size_t msg_len,
@@ -31,20 +31,20 @@ int merkle_tree_proof_of_inclusion(const void *msg, const size_t msg_len,
     bro = cast_lnk_next(path_hdr, merkle_tree_proof_path_node_t, lnk);
 
     while (lnk_next(&bro->lnk) != path_hdr) {
-        target = cast_lnk_next(&bro->lnk, merkle_tree_proof_path_node_t, lnk);
+        target = cast_lnk_next(mtproof_lnk(bro), merkle_tree_proof_path_node_t, lnk);
 
-        if (bro->lr_flag == 0) {
-            memcpy(mid_msg, bro->hptr.hash, SHA256_DIGEST_LENGTH);
+        if (mtproof_lrflag(bro) == 0) {
+            memcpy(mid_msg, hptr_hash(mtproof_hptr(bro)), SHA256_DIGEST_LENGTH);
             memcpy(mid_msg + SHA256_DIGEST_LENGTH, hash, SHA256_DIGEST_LENGTH);
         }
         else {
             memcpy(mid_msg, hash, SHA256_DIGEST_LENGTH);
-            memcpy(mid_msg + SHA256_DIGEST_LENGTH, bro->hptr.hash, SHA256_DIGEST_LENGTH);
+            memcpy(mid_msg + SHA256_DIGEST_LENGTH, hptr_hash(mtproof_hptr(bro)), SHA256_DIGEST_LENGTH);
         }
 
         hash_pointer_calc_sha256(hash, mid_msg, SHA256_DIGEST_LENGTH * 2);
 
-        if (memcmp(hash, target->hptr.hash, SHA256_DIGEST_LENGTH) != 0) {
+        if (memcmp(hash, hptr_hash(mtproof_hptr(target)), SHA256_DIGEST_LENGTH) != 0) {
             return 0;
         }
     }

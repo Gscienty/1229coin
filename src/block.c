@@ -11,12 +11,12 @@ int blk_init(block_t *bptr) {
     }
 
     bptr->hdr.version = _1229_COIN_VERSION;
-    memset(bptr->hdr.p_hptr.hash, 0, SHA256_DIGEST_LENGTH);
-    memset(bptr->hdr.m_hptr.hash, 0, SHA256_DIGEST_LENGTH);
-    memset(bptr->hdr.nonce, 0, _1229_COIN_NONCE_LEN);
+    memset(hptr_hash(&blk_hdr(bptr)->p_hptr), 0, SHA256_DIGEST_LENGTH);
+    memset(hptr_hash(&blk_hdr(bptr)->m_hptr), 0, SHA256_DIGEST_LENGTH);
+    memset(blk_hdr(bptr)->nonce, 0, _1229_COIN_NONCE_LEN);
     bptr->hdr.hard_lv = 0;
     
-    lnk_hdr_init(&bptr->tx_lnkhptr);
+    lnk_hdr_init(blk_tx(bptr));
 
     bptr->save_func = blk_save_func;
 
