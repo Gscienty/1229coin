@@ -6,7 +6,8 @@
 
 typedef struct merkle_tree_node_s merkle_tree_node_t;
 struct merkle_tree_node_s {
-    hash_pointer_t node;
+    hash_pointer_t hptr;
+
     hash_pointer_t left;
     hash_pointer_t right;
 };

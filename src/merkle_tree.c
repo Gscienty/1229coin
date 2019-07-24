@@ -16,7 +16,7 @@ int merkle_tree_node_parent_calc_sha256(merkle_tree_node_t *parent,
     memcpy(msg, parent->left.hash, SHA256_DIGEST_LENGTH);
     memcpy(msg + SHA256_DIGEST_LENGTH, parent->right.hash, SHA256_DIGEST_LENGTH);
 
-    return hash_pointer_calc_sha256(parent->node.hash, msg, 2 * SHA256_DIGEST_LENGTH);
+    return hash_pointer_calc_sha256(parent->hptr.hash, msg, 2 * SHA256_DIGEST_LENGTH);
 }
 
 int merkle_tree_proof_of_inclusion(const void *msg, const size_t msg_len,
