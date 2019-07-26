@@ -1,5 +1,4 @@
 #include "hash_pointer.h"
-#include <stdio.h>
 
 int hash_pointer_calc_sha256(unsigned char hash[SHA256_DIGEST_LENGTH], const void *base, const size_t len) {
     int ret;
