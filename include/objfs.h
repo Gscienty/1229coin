@@ -2,6 +2,7 @@
 #define _1229_COIN_NODEFS_H
 
 #include <stddef.h>
+#include <hash_pointer.h>
 
 typedef struct objsroot_s objsroot_t;
 struct objsroot_s {
@@ -18,5 +19,7 @@ struct objcontent_s {
 int objsroot_init(objsroot_t *root, char *basedir);
 
 int objsroot_createrepo(objsroot_t *root);
+
+int objsroot_loose_fatch(objcontent_t *cnt, objsroot_t *root, hash_pointer_t *hptr);
 
 #endif

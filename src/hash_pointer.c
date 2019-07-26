@@ -1,5 +1,7 @@
 #include "hash_pointer.h"
 
+char BYTE_2_CHAR[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
 int hash_pointer_calc_sha256(unsigned char hash[SHA256_DIGEST_LENGTH], const void *base, const size_t len) {
     int ret;
     SHA256_CTX ctx;
