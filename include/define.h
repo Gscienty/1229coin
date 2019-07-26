@@ -11,4 +11,11 @@
 typedef int (*save_node_fptr) (void *node_ptr, const char *base);
 typedef int (*load_node_fptr) (void *node_ptr, const char *base, const unsigned char hash[SHA256_DIGEST_LENGTH]);
 
+typedef struct objcontent_s objcontent_t;
+struct objcontent_s {
+    unsigned char *buf;
+    size_t len;
+};
+
+
 #endif

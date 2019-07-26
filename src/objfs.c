@@ -105,6 +105,43 @@ failure:
     return -1;
 }
 
+int objsroot_loose_put(objcontent_t *cnt, objsroot_t *root, hash_pointer_t *hptr) {
+    size_t loose_objfs_base_size = 0;
+    char *obj_path = NULL;
+    int objfs = 0;
+    if (cnt == NULL || root == NULL || hptr == NULL) {
+        return -1;
+    }
+    loose_objfs_base_size = strlen(root->loose_objs_dir);
+    obj_path = (char *) malloc(loose_objfs_base_size + SHA256_DIGEST_LENGTH * 2 + 3);
+    if (obj_path == NULL) {
+        goto failure;
+    }
+    if (loose_objfile_path(obj_path, root, hptr, loose_objfs_base_size) != 0) {
+        goto failure;
+    }
+    if (access(obj_path, F_OK) == 0) {
+        goto failure;
+    }
+    if ((objfs = open(obj_path, O_CREAT | O_WRONLY)) <= 0) {
+        goto failure;
+    }
+
+    write(objfs, cnt->buf, cnt->len);
+
+    free(obj_path);
+    close(objfs);
+    return 0;
+failure:
+    if (obj_path == NULL) {
+        free(obj_path);
+    }
+    if (objfs > 0) {
+        close(objfs);
+    }
+    return -1;
+}
+
 static int loose_objfile_path(char *obj_path, objsroot_t *root, hash_pointer_t *hptr, size_t base_size) {
     size_t off = 0;
     size_t hptr_off;
