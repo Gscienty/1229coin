@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static int loose_objfile_path(char *obj_path, objsroot_t *root, hash_pointer_t *hptr, size_t base_size);
+static int loose_objfile_path(char *obj_path, const objsroot_t *root, const hash_pointer_t *hptr, const size_t base_size);
 
 int objsroot_init(objsroot_t *root, char *basedir) {
     size_t basedir_len = 0;
@@ -49,19 +49,19 @@ int objsroot_createrepo(objsroot_t *root) {
         return -1;
     }
     if (access(root->root_dir, F_OK) != 0) {
-        if (mkdir(root->root_dir, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != 0) {
+        if (mkdir(root->root_dir, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) {
             return -2;
         }
     }
     if (access(root->loose_objs_dir, F_OK) != 0) {
-        if (mkdir(root->loose_objs_dir, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != 0) {
+        if (mkdir(root->loose_objs_dir, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) {
             return -2;
         }
     }
     return 0;
 }
 
-int objsroot_loose_fatch(objcontent_t *cnt, objsroot_t *root, hash_pointer_t *hptr) {
+int objsroot_loose_fatch(objcontent_t *cnt, const objsroot_t *root, const hash_pointer_t *hptr) {
     size_t loose_objfs_base_size = 0;
     char *obj_path = NULL;
     int objfs = 0;
@@ -105,7 +105,7 @@ failure:
     return -1;
 }
 
-int objsroot_loose_put(objcontent_t *cnt, objsroot_t *root, hash_pointer_t *hptr) {
+int objsroot_loose_put(objcontent_t *cnt, const objsroot_t *root, const hash_pointer_t *hptr) {
     size_t loose_objfs_base_size = 0;
     char *obj_path = NULL;
     int objfs = 0;
@@ -123,7 +123,7 @@ int objsroot_loose_put(objcontent_t *cnt, objsroot_t *root, hash_pointer_t *hptr
     if (access(obj_path, F_OK) == 0) {
         goto failure;
     }
-    if ((objfs = open(obj_path, O_CREAT | O_WRONLY)) <= 0) {
+    if ((objfs = open(obj_path, O_CREAT | O_TRUNC | O_WRONLY)) <= 0) {
         goto failure;
     }
 
@@ -142,7 +142,7 @@ failure:
     return -1;
 }
 
-static int loose_objfile_path(char *obj_path, objsroot_t *root, hash_pointer_t *hptr, size_t base_size) {
+static int loose_objfile_path(char *obj_path, const objsroot_t *root, const hash_pointer_t *hptr, const size_t base_size) {
     size_t off = 0;
     size_t hptr_off;
     memcpy(obj_path, root->loose_objs_dir, base_size);
@@ -150,6 +150,12 @@ static int loose_objfile_path(char *obj_path, objsroot_t *root, hash_pointer_t *
     off = base_size + 1;
     obj_path[off++] = hptr_ichar_1st(hptr, 0);
     obj_path[off++] = hptr_ichar_2nd(hptr, 0);
+    obj_path[off] = 0;
+    if (access(obj_path, F_OK) != 0) {
+        if (mkdir(obj_path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) {
+            return -1;
+        }
+    }
     obj_path[off++] = '/';
 
     for (hptr_off = 1; hptr_off < SHA256_DIGEST_LENGTH; hptr_off++) {
