@@ -31,4 +31,10 @@ struct link_s {
 #define lnk_insert_after(p, n) lnk_insert_common(p, n, next, prev)
 #define lnk_insert_before(p, n) lnk_insert_common(p, n, prev, next)
 
+#define lnk_remove(p) \
+    ({ \
+        (p)->next = (p)->next->next; \
+        (p)->prev = (p)->prev->prev; \
+     })
+
 #endif
