@@ -25,11 +25,17 @@ struct block_s {
     load_node_fptr load_func;
 };
 
-#define blk_hptr(p) (&((p)->hptr))
-#define blk_hdr(p) (&((p)->hdr))
-#define blk_tx(p) (&((p)->tx_lnkhptr))
-#define blk_save(p, b) (((p)->save_func) ((void *) (p), (const char *) (b)))
-#define blk_load(p, b, h) (((p)->load_func) ((void *) (p), (const char *) (b), (const unsigned char *) (h)))
+typedef struct block_tx_s block_tx_t;
+struct block_tx_s {
+    link_t lnk;
+    hash_pointer_t hptr;
+};
+
+#define blk_hptr(p) (&(((block_t *) (p))->hptr))
+#define blk_hdr(p) (&(((block_t *) (p))->hdr))
+#define blk_tx(p) (&(((block_t *) (p))->tx_lnkhptr))
+#define blk_save(p, b) ((((block_t *) (p))->save_func) ((const void *) (p), (const void *) (b)))
+#define blk_load(p, b, h) ((((block_t *) (p))->load_func) ((void *) (p), (const void *) (b), (const void *) (h)))
 
 int blk_init(block_t *bptr);
 
