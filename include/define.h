@@ -8,8 +8,8 @@
 
 #define cast(p, s, m) ((s *) (((char *) p) - ((char *) &(((s *) 0)->m))))
 
-typedef int (*save_node_fptr) (void *node_ptr, const char *base);
-typedef int (*load_node_fptr) (void *node_ptr, const char *base, const unsigned char hash[SHA256_DIGEST_LENGTH]);
+typedef int (*save_node_fptr) (const void *node_ptr, const void *base);
+typedef int (*load_node_fptr) (void *node_ptr, const void *base, const void *hash);
 
 typedef struct objcontent_s objcontent_t;
 struct objcontent_s {
