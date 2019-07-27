@@ -21,3 +21,14 @@ int hash_pointer_calc_sha256(hash_pointer_t *hptr, const objcontent_t *cnt) {
 
     return 0;
 }
+
+int hash_pointer_write(unsigned char *buf, const hash_pointer_t *hptr) {
+    size_t i;
+    size_t off = 0;
+    for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        buf[off++] = hptr_ichar_1st(hptr, i);
+        buf[off++] = hptr_ichar_2nd(hptr, i);
+    }
+
+    return 0;
+}
