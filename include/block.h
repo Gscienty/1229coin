@@ -4,10 +4,12 @@
 #include "hash_pointer.h"
 #include "link.h"
 #include "define.h"
+#include <time.h>
 
 typedef struct block_hdr_s block_hdr_t;
 struct block_hdr_s {
     unsigned int version;
+    time_t ts;
     hash_pointer_t p_hptr;
     hash_pointer_t m_hptr;
     unsigned int hard_lv;

@@ -21,6 +21,8 @@ int blk_init(block_t *bptr) {
     
     lnk_hdr_init(blk_tx(bptr));
 
+    time(&blk_hdr(bptr)->ts);
+
     bptr->save_func = blk_save_func;
     bptr->load_func = blk_load_func;
 
@@ -35,6 +37,8 @@ static int blk_save_func(const void *blk, const void *repo) {
     size_t i;
     block_tx_t *btx = NULL;
     cnt.len = 4 * 2 // version
+        + 1
+        + 8 * 2 // timestamp
         + 1
         + SHA256_DIGEST_LENGTH * 2  // p_hptr
         + 1
@@ -57,6 +61,9 @@ static int blk_save_func(const void *blk, const void *repo) {
 
     sprintf((char *) cnt.buf, "%08X\n", blk_hdr(blk)->version);
     off = 9;
+
+    sprintf((char *) cnt.buf, "%016lX\n", blk_hdr(blk)->ts);
+    off += 17;
 
     hash_pointer_write(cnt.buf + off, &blk_hdr(blk)->p_hptr);
     off += SHA256_DIGEST_LENGTH * 2;
@@ -104,6 +111,13 @@ static int blk_load_func(void *blk, const void *repo, const void *hash) {
         ((unsigned char *) &blk_hdr(blk)->version)[h_off] = (CHAR_2_BYTE(c1st) << 4) | CHAR_2_BYTE(c2nd);
     }
     off += 9;
+
+    for (h_off = 7; h_off >= 0; h_off--) {
+        c1st = cnt.buf[off + (7 - h_off) * 2];
+        c2nd = cnt.buf[off + (7 - h_off) * 2 + 1];
+        ((unsigned char *) &blk_hdr(blk)->version)[h_off] = (CHAR_2_BYTE(c1st) << 4) | CHAR_2_BYTE(c2nd);
+    }
+    off += 17;
 
     hash_pointer_read(&blk_hdr(blk)->p_hptr, cnt.buf + off);
     off += SHA256_DIGEST_LENGTH * 2 + 1;
