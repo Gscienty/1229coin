@@ -1,6 +1,17 @@
 #include "merkle_tree.h"
+#include "objfs.h"
 #include <memory.h>
 #include <malloc.h>
+
+static int merkle_tree_save(const void *mtn, const void *repo);
+static int merkle_tree_load(void *mtn, const void *repo, const void *hash);
+
+int merkle_tree_init(merkle_tree_node_t *n) {
+    n->save_func = merkle_tree_save;
+    n->load_func = merkle_tree_load;
+
+    return 0;
+}
 
 int merkle_tree_node_parent_calc_sha256(merkle_tree_node_t *parent,
                                         const hash_pointer_t *left_hptr,
@@ -54,4 +65,53 @@ int merkle_tree_proof_of_inclusion(const objcontent_t *cnt, const link_t *path_h
     }
 
     return 1;
+}
+
+static int merkle_tree_save(const void *mtn, const void *repo) {
+    if (mtn == NULL || repo == NULL) {
+        return -1;
+    }
+
+    objcontent_t cnt;
+    size_t off = 0;
+    cnt.len = SHA256_DIGEST_LENGTH * 2 
+        + 1
+        + SHA256_DIGEST_LENGTH * 2;
+    cnt.buf = (unsigned char *) malloc(cnt.len);
+    if (cnt.buf == NULL) {
+        return -1;
+    }
+
+    hash_pointer_write(cnt.buf + off, mtn_lft(mtn));
+    off += SHA256_DIGEST_LENGTH * 2;
+    cnt.buf[off++] = '\n';
+
+    hash_pointer_write(cnt.buf + off, mtn_rgt(mtn));
+    off += SHA256_DIGEST_LENGTH * 2;
+
+    hash_pointer_calc_sha256(mtn_hptr(mtn), &cnt);
+    objsroot_loose_put(&cnt, (objsroot_t *) repo, mtn_hptr(mtn));
+
+    free(cnt.buf);
+    return 0;
+}
+
+static int merkle_tree_load(void *mtn, const void *repo, const void *hash) {
+    if (mtn == NULL || repo == NULL || hash == NULL) {
+        return -1;
+    }
+    int ret;
+    int off = 0;
+    objcontent_t cnt;
+
+    if ((ret = objsroot_loose_fatch(&cnt, (objsroot_t *) repo, (hash_pointer_t *) hash)) < 0) {
+        return ret;
+    }
+    memcpy(hptr_hash(mtn_hptr(mtn)), hptr_hash(hash), SHA256_DIGEST_LENGTH);
+    hash_pointer_read(mtn_lft(mtn), cnt.buf + off);
+    off += SHA256_DIGEST_LENGTH * 2 + 1;
+    hash_pointer_read(mtn_rgt(mtn), cnt.buf + off);
+
+    free(cnt.buf);
+    return 0;
 }

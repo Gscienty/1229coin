@@ -29,6 +29,16 @@ int blk_init(block_t *bptr) {
     return 0;
 }
 
+int blk_txlnk_clear(block_t *bptr) {
+    block_tx_t *tx = NULL;
+    while (lnk_next(blk_tx(bptr)) != blk_tx(bptr)) {
+        tx = cast(lnk_next(blk_tx(bptr)), struct block_tx_s, lnk);
+        lnk_remove(lnk_next(blk_tx(bptr)));
+        free(tx);
+    }
+    return 0;
+}
+
 static int blk_save_func(const void *blk, const void *repo) {
     size_t tx_count = 0;
     objcontent_t cnt;
@@ -36,6 +46,7 @@ static int blk_save_func(const void *blk, const void *repo) {
     size_t off = 0;
     size_t i;
     block_tx_t *btx = NULL;
+    int ret;
     cnt.len = 4 * 2 // version
         + 1
         + 8 * 2 // timestamp
@@ -89,7 +100,10 @@ static int blk_save_func(const void *blk, const void *repo) {
     }
 
     hash_pointer_calc_sha256(blk_hptr(blk), &cnt);
-    return objsroot_loose_put(&cnt, (objsroot_t *) repo, blk_hptr(blk));
+    ret = objsroot_loose_put(&cnt, (objsroot_t *) repo, blk_hptr(blk));
+
+    free(cnt.buf);
+    return ret;
 }
 
 static int blk_load_func(void *blk, const void *repo, const void *hash) {
@@ -146,5 +160,6 @@ static int blk_load_func(void *blk, const void *repo, const void *hash) {
         hash_pointer_read(&btx->hptr, cnt.buf + off);
     }
 
+    free(cnt.buf);
     return 0;
 }

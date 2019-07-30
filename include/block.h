@@ -41,4 +41,6 @@ struct block_tx_s {
 
 int blk_init(block_t *bptr);
 
+int blk_txlnk_clear(block_t *bptr);
+
 #endif
