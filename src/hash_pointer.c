@@ -32,3 +32,14 @@ int hash_pointer_write(unsigned char *buf, const hash_pointer_t *hptr) {
 
     return 0;
 }
+
+int hash_pointer_read(hash_pointer_t *hptr, unsigned char *buf) {
+    size_t off = 0;
+    size_t h_off = 0;
+    for (; off < SHA256_DIGEST_LENGTH * 2; ) {
+        hptr_hash(hptr)[h_off++] = CHAR_2_BYTE(buf[off]) | (CHAR_2_BYTE(buf[off + 1]) << 4);
+        off += 2;
+    }
+
+    return 0;
+}

@@ -61,6 +61,7 @@ static int blk_save_func(const void *blk, const void *repo) {
     hash_pointer_write(cnt.buf + off, &blk_hdr(blk)->p_hptr);
     off += SHA256_DIGEST_LENGTH * 2;
     cnt.buf[off++] = '\n';
+
     hash_pointer_write(cnt.buf + off, &blk_hdr(blk)->m_hptr);
     off += SHA256_DIGEST_LENGTH * 2;
     cnt.buf[off++] = '\n';
@@ -86,10 +87,50 @@ static int blk_save_func(const void *blk, const void *repo) {
 
 static int blk_load_func(void *blk, const void *repo, const void *hash) {
     objcontent_t cnt;
+    unsigned char c1st = 0;
+    unsigned char c2nd = 0;
+    size_t off = 0;
+    size_t i;
+    int h_off = 3;
+    block_tx_t *btx;
     if (objsroot_loose_fatch(&cnt, (const objsroot_t *) repo, (const hash_pointer_t *) hash) != 0) {
         return -1;
     }
     memcpy(blk_hptr(blk)->hash, ((const hash_pointer_t *) hash)->hash, SHA256_DIGEST_LENGTH); 
+
+    for (h_off = 3; h_off >= 0; h_off--) {
+        c1st = cnt.buf[off + (3 - h_off) * 2];
+        c2nd = cnt.buf[off + (3 - h_off) * 2 + 1];
+        ((unsigned char *) &blk_hdr(blk)->version)[h_off] = (CHAR_2_BYTE(c1st) << 4) | CHAR_2_BYTE(c2nd);
+    }
+    off += 9;
+
+    hash_pointer_read(&blk_hdr(blk)->p_hptr, cnt.buf + off);
+    off += SHA256_DIGEST_LENGTH * 2 + 1;
+
+    hash_pointer_read(&blk_hdr(blk)->m_hptr, cnt.buf + off);
+    off += SHA256_DIGEST_LENGTH * 2 + 1;
+
+    for (h_off = 3; h_off >= 0; h_off--) {
+        c1st = cnt.buf[off + (3 - h_off) * 2];
+        c2nd = cnt.buf[off + (3 - h_off) * 2 + 1];
+        ((unsigned char *) &blk_hdr(blk)->hard_lv)[h_off] = (CHAR_2_BYTE(c1st) << 4) | CHAR_2_BYTE(c2nd);
+    }
+    off += 9;
+
+    for (i = 0; i < _1229_COIN_NONCE_LEN; i++) {
+        blk_hdr(blk)->nonce[i] = CHAR_2_BYTE(cnt.buf[off + i * 2]) | (CHAR_2_BYTE(cnt.buf[off + i * 2 + 1]) << 4);
+    }
+    off += _1229_COIN_NONCE_LEN * 2 + 1;
+
+    for (; off < cnt.len; off += SHA256_DIGEST_LENGTH * 2 + 1) {
+        btx = (block_tx_t *) malloc(sizeof(block_tx_t));
+        if (btx == NULL) {
+            return -1;
+        }
+        lnk_insert_before(blk_tx(blk), &btx->lnk);
+        hash_pointer_read(&btx->hptr, cnt.buf + off);
+    }
 
     return 0;
 }

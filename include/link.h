@@ -20,7 +20,7 @@ struct link_s {
         (p)->prev = (p); \
      })
 
-#define lnk_insert_common(p, n, ins, ref_ins) \
+#define lnk_insert_common(p, n, ins, ins_ref) \
     ({ \
         (n)->ins = (p)->ins; \
         (n)->ins_ref = (p); \
